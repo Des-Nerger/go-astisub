@@ -135,9 +135,18 @@ type Color struct {
 // newColorFromSSAString builds a new color based on an SSA string
 func newColorFromSSAString(s string, base int) (c *Color, err error) {
 	var i int64
-	if i, err = strconv.ParseInt(s, base, 64); err != nil {
-		err = errors.Wrapf(err, "parsing int %s with base %d failed", s, base)
-		return
+	if (base == 16) {
+		var u uint64
+		if u, err = strconv.ParseUint(s, base, 64); err != nil {
+			err = errors.Wrapf(err, "parsing uint %s with base %d failed", s, base)
+			return
+		}
+		i = int64(u)
+	} else {
+		if i, err = strconv.ParseInt(s, base, 64); err != nil {
+			err = errors.Wrapf(err, "parsing int %s with base %d failed", s, base)
+			return
+		}
 	}
 	c = &Color{
 		Alpha: uint8(i>>24) & 0xff,
