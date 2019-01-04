@@ -145,6 +145,7 @@ func ReadFromSSA(i io.Reader) (o *Subtitles, err error) {
 	// Scan
 	var line, sectionName string
 	var format map[int]string
+	isV4Plus := true
 	isFirstLine := true
 	for scanner.Scan() {
 		// Fetch line
@@ -166,14 +167,20 @@ func ReadFromSSA(i io.Reader) (o *Subtitles, err error) {
 			switch strings.ToLower(line[1 : len(line)-1]) {
 			case "events":
 				sectionName = ssaSectionNameEvents
-				format = make(map[int]string)
+				format = nil
 				continue
 			case "script info":
 				sectionName = ssaSectionNameScriptInfo
 				continue
-			case "v4 styles", "v4+ styles", "v4 styles+":
+			case "v4 styles":
+				isV4Plus = false
 				sectionName = ssaSectionNameStyles
-				format = make(map[int]string)
+				format = nil
+				continue
+			case "v4+ styles", "v4 styles+":
+				isV4Plus = true
+				sectionName = ssaSectionNameStyles
+				format = nil
 				continue
 			default:
 				astilog.Debugf("astisub: unknown section: %s", line)
@@ -212,14 +219,30 @@ func ReadFromSSA(i io.Reader) (o *Subtitles, err error) {
 		case ssaSectionNameEvents, ssaSectionNameStyles:
 			// Parse format
 			if header == "Format" {
-				for idx, item := range strings.Split(content, ",") {
-					format[idx] = strings.TrimSpace(item)
-				}
+				format = ssaParseFormatContent(content)
 			} else {
 				// No format provided
-				if len(format) == 0 {
-					err = fmt.Errorf("astisub: no %s format provided", sectionName)
-					return
+				if format == nil {
+					astilog.Debugf("astisub: no %s format provided, using default one", sectionName)
+					format = ssaParseFormatContent(func() string {
+						switch sectionName {
+						case ssaSectionNameStyles:
+							if isV4Plus {
+								return "Name, Fontname, Fontsize, PrimaryColour, SecondaryColour," +
+									"OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut," +
+									"ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow," +
+									"Alignment, MarginL, MarginR, MarginV, Encoding"
+							}
+							return "Name, Fontname, Fontsize, PrimaryColour, SecondaryColour," +
+									"TertiaryColour, BackColour, Bold, Italic, BorderStyle, Outline," +
+									"Shadow, Alignment, MarginL, MarginR, MarginV, AlphaLevel, Encoding"
+						default: //case ssaSectionNameEvents:
+							if isV4Plus {
+								return "Layer, Start, End, Style, Actor, MarginL, MarginR, MarginV, Effect, Text"
+							}
+							return "Marked, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text"
+						}
+					}())
 				}
 
 				// Switch on section name
@@ -645,6 +668,14 @@ func newSSAStyleFromString(content string, format map[int]string) (s *ssaStyle, 
 				s.name = item
 			}
 		}
+	}
+	return
+}
+
+func ssaParseFormatContent(content string) (format map[int]string) {
+	format = map[int]string{}
+	for idx, item := range strings.Split(content, ",") {
+		format[idx] = strings.TrimSpace(item)
 	}
 	return
 }
