@@ -60,6 +60,54 @@ func TestSubtitles_Add(t *testing.T) {
 	assert.Equal(t, "subtitle-2", s.Items[0].Lines[0].Items[0].Text)
 }
 
+func TestSubtitles_Sync(t *testing.T) {
+	{
+		s := mockSubtitles()
+		s.Sync(time.Second)
+		assert.Len(t, s.Items, 2)
+		assert.Equal(t, 2*time.Second, s.Items[0].StartAt)
+		assert.Equal(t, 4*time.Second, s.Items[0].EndAt)
+		assert.Equal(t, 2*time.Second, s.Items[0].StartAt)
+		assert.Equal(t, 4*time.Second, s.Items[0].EndAt)
+	}
+	{
+		s := mockSubtitles()
+		s.Sync(-2 * time.Second)
+		assert.Len(t, s.Items, 2)
+		assert.Equal(t, time.Duration(0), s.Items[0].StartAt)
+		assert.Equal(t, time.Second, s.Items[0].EndAt)
+	}
+	{
+		s := mockSubtitles()
+		s.Sync(-4 * time.Second)
+		assert.Len(t, s.Items, 1)
+		assert.Equal(t, "subtitle-2", s.Items[0].Lines[0].Items[0].Text)
+	}
+	{
+		s := mockSubtitles()
+		s.Sync(-3 * time.Second)
+		assert.Len(t, s.Items, 2)
+		assert.Equal(t, time.Duration(0), s.Items[0].StartAt)
+		assert.Equal(t, time.Duration(0), s.Items[0].EndAt)
+	}
+	{
+		s := mockSubtitles()
+		s.Sync(-2*time.Second, 3*time.Second)
+		assert.Len(t, s.Items, 2)
+		assert.Equal(t, time.Duration(0), s.Items[0].StartAt)
+		assert.Equal(t, time.Second, s.Items[0].EndAt)
+		assert.Equal(t, 3*time.Second, s.Items[1].StartAt)
+		assert.Equal(t, 7*time.Second, s.Items[1].EndAt)
+	}
+	{
+		s := mockSubtitles()
+		s.Sync(-4*time.Second, 3*time.Second)
+		assert.Len(t, s.Items, 1)
+		assert.Equal(t, 3*time.Second, s.Items[0].StartAt)
+		assert.Equal(t, 7*time.Second, s.Items[0].EndAt)
+	}
+}
+
 func TestSubtitles_Duration(t *testing.T) {
 	assert.Equal(t, time.Duration(0), astisub.Subtitles{}.Duration())
 	assert.Equal(t, 7*time.Second, mockSubtitles().Duration())

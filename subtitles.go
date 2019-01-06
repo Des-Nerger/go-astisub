@@ -317,17 +317,43 @@ type LineItem struct {
 
 // Add adds a duration to each time boundaries. As in the time package, duration can be negative.
 func (s *Subtitles) Add(d time.Duration) {
+	s.Sync(d)
+}
+
+// Sync adds time.Duration increments to each time boundaries whose low boundary
+// lies within the increment's interval.
+// Arguments are given in this order: increment, {interval.start, [increment,]}.
+// Interval.start of the first increment are assumed to be time.Duration(0).
+func (s *Subtitles) Sync(ds ...time.Duration) {{
+	ds := append([]time.Duration{time.Duration(0)},
+		func() []time.Duration {
+			if len(ds) % 2 == 1 {
+				return append(ds, s.Duration())
+			}
+			return ds
+		} ()...,
+	)
 	for idx := 0; idx < len(s.Items); idx++ {
-		s.Items[idx].EndAt += d
-		s.Items[idx].StartAt += d
-		if s.Items[idx].EndAt <= 0 && s.Items[idx].StartAt <= 0 {
-			s.Items = append(s.Items[:idx], s.Items[idx+1:]...)
-			idx--
-		} else if s.Items[idx].StartAt <= 0 {
-			s.Items[idx].StartAt = time.Duration(0)
+		item := s.Items[idx]
+		for k:=1; k<len(ds); k+=2 {
+			interval := struct{start, stop time.Duration} {ds[k-1], ds[k+1]}
+			increment := ds[k]
+			if interval.start <= item.StartAt && item.StartAt < interval.stop {
+				item.StartAt += increment
+				item.EndAt += increment
+				if item.StartAt < 0 {
+					if item.EndAt < 0 {
+						s.Items = append(s.Items[:idx], s.Items[idx+1:]...)
+						idx--
+					} else {
+						item.StartAt = time.Duration(0)
+					}
+				}
+				break
+			}
 		}
 	}
-}
+}}
 
 // Duration returns the subtitles duration
 func (s Subtitles) Duration() time.Duration {

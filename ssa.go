@@ -234,8 +234,8 @@ func ReadFromSSA(i io.Reader) (o *Subtitles, err error) {
 									"Alignment, MarginL, MarginR, MarginV, Encoding"
 							}
 							return "Name, Fontname, Fontsize, PrimaryColour, SecondaryColour," +
-									"TertiaryColour, BackColour, Bold, Italic, BorderStyle, Outline," +
-									"Shadow, Alignment, MarginL, MarginR, MarginV, AlphaLevel, Encoding"
+								"TertiaryColour, BackColour, Bold, Italic, BorderStyle, Outline," +
+								"Shadow, Alignment, MarginL, MarginR, MarginV, AlphaLevel, Encoding"
 						default: //case ssaSectionNameEvents:
 							if isV4Plus {
 								return "Layer, Start, End, Style, Actor, MarginL, MarginR, MarginV, Effect, Text"
@@ -672,6 +672,7 @@ func newSSAStyleFromString(content string, format map[int]string) (s *ssaStyle, 
 	return
 }
 
+// ssaParseFormatContent used to parse "Format:"'s fields
 func ssaParseFormatContent(content string) (format map[int]string) {
 	format = map[int]string{}
 	for idx, item := range strings.Split(content, ",") {
