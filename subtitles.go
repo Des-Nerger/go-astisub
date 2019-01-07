@@ -321,14 +321,17 @@ func (s *Subtitles) Add(d time.Duration) {
 }
 
 // Sync adds time.Duration increments to each time boundaries whose low boundary
-// lies within the increment's interval.
-// Arguments are given in this order: increment, {interval.start, [increment,]}.
-// Interval.start of the first increment are assumed to be time.Duration(0).
+// lies within the increment's interval, i.e. interval.start <= item.StartAt < interval.end.
+// Arguments are given in this order: increment, {interval.start, increment,} [interval.start].
+// Interval.start of the first increment is assumed to be time.Duration(0).
+// Interval.end of each increment is equal to interval.start of the next increment if
+// there is any next at all. And if there isn't, then interval.end of that last increment
+// is considered to be (*Subtitles).Duration()+1.
 func (s *Subtitles) Sync(ds ...time.Duration) {{
 	ds := append([]time.Duration{time.Duration(0)},
 		func() []time.Duration {
 			if len(ds) % 2 == 1 {
-				return append(ds, s.Duration())
+				return append(ds, s.Duration()+1)
 			}
 			return ds
 		} ()...,
@@ -336,9 +339,9 @@ func (s *Subtitles) Sync(ds ...time.Duration) {{
 	for idx := 0; idx < len(s.Items); idx++ {
 		item := s.Items[idx]
 		for k:=1; k<len(ds); k+=2 {
-			interval := struct{start, stop time.Duration} {ds[k-1], ds[k+1]}
+			interval := struct{start, end time.Duration} {ds[k-1], ds[k+1]}
 			increment := ds[k]
-			if interval.start <= item.StartAt && item.StartAt < interval.stop {
+			if interval.start <= item.StartAt && item.StartAt < interval.end {
 				item.StartAt += increment
 				item.EndAt += increment
 				if item.StartAt < 0 {
