@@ -324,9 +324,8 @@ func (s *Subtitles) Add(d time.Duration) {
 // lies within the increment's interval, i.e. interval.start <= item.StartAt < interval.end.
 // Arguments are given in this order: increment, {interval.start, increment,} [interval.start].
 // Interval.start of the first increment is assumed to be time.Duration(0).
-// Interval.end of each increment is equal to interval.start of the next increment if
-// there is any next at all. And if there isn't, then interval.end of that last increment
-// is considered to be (*Subtitles).Duration()+1.
+// Interval.end of each increment is equal to next interval.start if there is one. And if there isn't,
+// then interval.end of that last increment is considered to be (*Subtitles).Duration()+1.
 func (s *Subtitles) Sync(ds ...time.Duration) {{
 	ds := append([]time.Duration{time.Duration(0)},
 		func() []time.Duration {
