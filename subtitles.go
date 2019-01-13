@@ -80,6 +80,8 @@ func Open(o Options) (s *Subtitles, err error) {
 		s, err = ReadFromTTML(f)
 	case ".vtt":
 		s, err = ReadFromWebVTT(f)
+	case ".txt":
+		s, err = ReadFromAudacityTXT(f)
 	default:
 		err = ErrInvalidExtension
 	}
@@ -622,6 +624,8 @@ func (s Subtitles) Write(dst string) (err error) {
 		err = s.WriteToTTML(f)
 	case ".vtt":
 		err = s.WriteToWebVTT(f)
+	case ".txt":
+		err = s.WriteToAudacityTXT(f)
 	default:
 		err = ErrInvalidExtension
 	}
