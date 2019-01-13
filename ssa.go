@@ -131,7 +131,10 @@ const (
 )
 
 // SSA regexp
-var ssaRegexpEffect = regexp.MustCompile("\\{[^\\{]+\\}")
+var (
+	ssaRegexpEffect = regexp.MustCompile("\\{[^\\{]+\\}")
+	ssaRegexpLinesSeparator = regexp.MustCompile(`\\[nN]`)
+)
 
 // ReadFromSSA parses an .ssa content
 func ReadFromSSA(i io.Reader) (o *Subtitles, err error) {
@@ -962,7 +965,7 @@ func newSSAEventFromItem(i Item) (e *ssaEvent) {
 		}
 		lines = append(lines, strings.Join(items, ""))
 	}
-	e.text = strings.Join(lines, "\\n")
+	e.text = strings.Join(lines, "\\N")
 	return
 }
 
@@ -1081,9 +1084,10 @@ func (e *ssaEvent) item(styles map[string]*Style) (i *Item, err error) {
 	}
 
 	// Loop through lines
-	for _, s := range strings.Split(e.text, "\\n") {
+	for _, s := range ssaRegexpLinesSeparator.Split(e.text, -1) {
 		// Init
 		s = strings.TrimSpace(s)
+		if s == "" {continue}
 		var l = Line{VoiceName: e.name}
 
 		// Extract effects
