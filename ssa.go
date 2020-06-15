@@ -102,8 +102,8 @@ const (
 	ssaStyleFormatNameBold            = "Bold"
 	ssaStyleFormatNameBorderStyle     = "BorderStyle"
 	ssaStyleFormatNameEncoding        = "Encoding"
-	ssaStyleFormatNameFontName        = "Fontname"
-	ssaStyleFormatNameFontSize        = "Fontsize"
+	ssaStyleFormatNameFontname        = "Fontname"
+	ssaStyleFormatNameFontsize        = "Fontsize"
 	ssaStyleFormatNameItalic          = "Italic"
 	ssaStyleFormatNameMarginL         = "MarginL"
 	ssaStyleFormatNameMarginR         = "MarginR"
@@ -117,7 +117,7 @@ const (
 	ssaStyleFormatNameSecondaryColour = "SecondaryColour"
 	ssaStyleFormatNameShadow          = "Shadow"
 	ssaStyleFormatNameSpacing         = "Spacing"
-	ssaStyleFormatNameStrikeout       = "Strikeout"
+	ssaStyleFormatNameStrikeOut       = "StrikeOut"
 	ssaStyleFormatNameTertiaryColour  = "TertiaryColour"
 	ssaStyleFormatNameUnderline       = "Underline"
 )
@@ -152,7 +152,7 @@ func ReadFromSSA(i io.Reader) (o *Subtitles, err error) {
 	isFirstLine := true
 	for scanner.Scan() {
 		// Fetch line
-		line = strings.TrimSpace(scanner.Text())
+		line = scanner.Text()
 
 		// Remove BOM header
 		if isFirstLine {
@@ -210,7 +210,7 @@ func ReadFromSSA(i io.Reader) (o *Subtitles, err error) {
 			continue
 		}
 		var header = strings.TrimSpace(split[0])
-		var content = strings.TrimSpace(strings.Join(split[1:], ":"))
+		var content = strings.TrimLeft(strings.Join(split[1:], ":"), " ")
 
 		// Switch on section name
 		switch sectionName {
@@ -342,24 +342,22 @@ func newSSAScriptInfo(m *Metadata) (o *ssaScriptInfo) {
 	o = &ssaScriptInfo{}
 
 	// Add metadata
-	if m != nil {
-		o.collisions = m.SSACollisions
-		o.comments = m.Comments
-		o.originalEditing = m.SSAOriginalEditing
-		o.originalScript = m.SSAOriginalScript
-		o.originalTiming = m.SSAOriginalTiming
-		o.originalTranslation = m.SSAOriginalTranslation
-		o.playDepth = m.SSAPlayDepth
-		o.playResX = m.SSAPlayResX
-		o.playResY = m.SSAPlayResY
-		o.scriptType = m.SSAScriptType
-		o.scriptUpdatedBy = m.SSAScriptUpdatedBy
-		o.synchPoint = m.SSASynchPoint
-		o.timer = m.SSATimer
-		o.title = m.Title
-		o.updateDetails = m.SSAUpdateDetails
-		o.wrapStyle = m.SSAWrapStyle
-	}
+	o.collisions = m.SSACollisions
+	o.comments = m.Comments
+	o.originalEditing = m.SSAOriginalEditing
+	o.originalScript = m.SSAOriginalScript
+	o.originalTiming = m.SSAOriginalTiming
+	o.originalTranslation = m.SSAOriginalTranslation
+	o.playDepth = m.SSAPlayDepth
+	o.playResX = m.SSAPlayResX
+	o.playResY = m.SSAPlayResY
+	o.scriptType = m.SSAScriptType
+	o.scriptUpdatedBy = m.SSAScriptUpdatedBy
+	o.synchPoint = m.SSASynchPoint
+	o.timer = m.SSATimer
+	o.title = m.Title
+	o.updateDetails = m.SSAUpdateDetails
+	o.wrapStyle = m.SSAWrapStyle
 	return
 }
 
@@ -573,7 +571,7 @@ func newSSAStyleFromString(content string, format map[int]string) (s *ssaStyle, 
 		// Switch on attribute name
 		switch attr {
 		// Bool
-		case ssaStyleFormatNameBold, ssaStyleFormatNameItalic, ssaStyleFormatNameStrikeout,
+		case ssaStyleFormatNameBold, ssaStyleFormatNameItalic, ssaStyleFormatNameStrikeOut,
 			ssaStyleFormatNameUnderline:
 			var b = item == "-1"
 			switch attr {
@@ -581,7 +579,7 @@ func newSSAStyleFromString(content string, format map[int]string) (s *ssaStyle, 
 				s.bold = astiptr.Bool(b)
 			case ssaStyleFormatNameItalic:
 				s.italic = astiptr.Bool(b)
-			case ssaStyleFormatNameStrikeout:
+			case ssaStyleFormatNameStrikeOut:
 				s.strikeout = astiptr.Bool(b)
 			case ssaStyleFormatNameUnderline:
 				s.underline = astiptr.Bool(b)
@@ -608,7 +606,7 @@ func newSSAStyleFromString(content string, format map[int]string) (s *ssaStyle, 
 				s.outlineColour = c
 			}
 		// Float
-		case ssaStyleFormatNameAlphaLevel, ssaStyleFormatNameAngle, ssaStyleFormatNameFontSize,
+		case ssaStyleFormatNameAlphaLevel, ssaStyleFormatNameAngle, ssaStyleFormatNameFontsize,
 			ssaStyleFormatNameScaleX, ssaStyleFormatNameScaleY,
 			ssaStyleFormatNameOutline, ssaStyleFormatNameShadow, ssaStyleFormatNameSpacing:
 			// Parse float
@@ -624,7 +622,7 @@ func newSSAStyleFromString(content string, format map[int]string) (s *ssaStyle, 
 				s.alphaLevel = astiptr.Float(f)
 			case ssaStyleFormatNameAngle:
 				s.angle = astiptr.Float(f)
-			case ssaStyleFormatNameFontSize:
+			case ssaStyleFormatNameFontsize:
 				s.fontSize = astiptr.Float(f)
 			case ssaStyleFormatNameScaleX:
 				s.scaleX = astiptr.Float(f)
@@ -663,9 +661,9 @@ func newSSAStyleFromString(content string, format map[int]string) (s *ssaStyle, 
 				s.marginVertical = astiptr.Int(i)
 			}
 		// String
-		case ssaStyleFormatNameFontName, ssaStyleFormatNameName:
+		case ssaStyleFormatNameFontname, ssaStyleFormatNameName:
 			switch attr {
-			case ssaStyleFormatNameFontName:
+			case ssaStyleFormatNameFontname:
 				s.fontName = item
 			case ssaStyleFormatNameName:
 				s.name = item
@@ -684,89 +682,6 @@ func ssaParseFormatContent(content string) (format map[int]string) {
 	return
 }
 
-// ssaUpdateFormat updates an SSA format
-func ssaUpdateFormat(n string, formatMap map[string]bool, format []string) []string {
-	if _, ok := formatMap[n]; !ok {
-		formatMap[n] = true
-		format = append(format, n)
-	}
-	return format
-}
-
-// updateFormat updates the format based on the non empty fields
-func (s ssaStyle) updateFormat(formatMap map[string]bool, format []string) []string {
-	if s.alignment != nil {
-		format = ssaUpdateFormat(ssaStyleFormatNameAlignment, formatMap, format)
-	}
-	if s.alphaLevel != nil {
-		format = ssaUpdateFormat(ssaStyleFormatNameAlphaLevel, formatMap, format)
-	}
-	if s.angle != nil {
-		format = ssaUpdateFormat(ssaStyleFormatNameAngle, formatMap, format)
-	}
-	if s.backColour != nil {
-		format = ssaUpdateFormat(ssaStyleFormatNameBackColour, formatMap, format)
-	}
-	if s.bold != nil {
-		format = ssaUpdateFormat(ssaStyleFormatNameBold, formatMap, format)
-	}
-	if s.borderStyle != nil {
-		format = ssaUpdateFormat(ssaStyleFormatNameBorderStyle, formatMap, format)
-	}
-	if s.encoding != nil {
-		format = ssaUpdateFormat(ssaStyleFormatNameEncoding, formatMap, format)
-	}
-	if len(s.fontName) > 0 {
-		format = ssaUpdateFormat(ssaStyleFormatNameFontName, formatMap, format)
-	}
-	if s.fontSize != nil {
-		format = ssaUpdateFormat(ssaStyleFormatNameFontSize, formatMap, format)
-	}
-	if s.italic != nil {
-		format = ssaUpdateFormat(ssaStyleFormatNameItalic, formatMap, format)
-	}
-	if s.marginLeft != nil {
-		format = ssaUpdateFormat(ssaStyleFormatNameMarginL, formatMap, format)
-	}
-	if s.marginRight != nil {
-		format = ssaUpdateFormat(ssaStyleFormatNameMarginR, formatMap, format)
-	}
-	if s.marginVertical != nil {
-		format = ssaUpdateFormat(ssaStyleFormatNameMarginV, formatMap, format)
-	}
-	if s.outline != nil {
-		format = ssaUpdateFormat(ssaStyleFormatNameOutline, formatMap, format)
-	}
-	if s.outlineColour != nil {
-		format = ssaUpdateFormat(ssaStyleFormatNameOutlineColour, formatMap, format)
-	}
-	if s.primaryColour != nil {
-		format = ssaUpdateFormat(ssaStyleFormatNamePrimaryColour, formatMap, format)
-	}
-	if s.scaleX != nil {
-		format = ssaUpdateFormat(ssaStyleFormatNameScaleX, formatMap, format)
-	}
-	if s.scaleY != nil {
-		format = ssaUpdateFormat(ssaStyleFormatNameScaleY, formatMap, format)
-	}
-	if s.secondaryColour != nil {
-		format = ssaUpdateFormat(ssaStyleFormatNameSecondaryColour, formatMap, format)
-	}
-	if s.shadow != nil {
-		format = ssaUpdateFormat(ssaStyleFormatNameShadow, formatMap, format)
-	}
-	if s.spacing != nil {
-		format = ssaUpdateFormat(ssaStyleFormatNameSpacing, formatMap, format)
-	}
-	if s.strikeout != nil {
-		format = ssaUpdateFormat(ssaStyleFormatNameStrikeout, formatMap, format)
-	}
-	if s.underline != nil {
-		format = ssaUpdateFormat(ssaStyleFormatNameUnderline, formatMap, format)
-	}
-	return format
-}
-
 // string returns the block as a string
 func (s ssaStyle) string(format []string) string {
 	var ss = []string{s.name}
@@ -775,7 +690,7 @@ func (s ssaStyle) string(format []string) string {
 		var found = true
 		switch attr {
 		// Bool
-		case ssaStyleFormatNameBold, ssaStyleFormatNameItalic, ssaStyleFormatNameStrikeout,
+		case ssaStyleFormatNameBold, ssaStyleFormatNameItalic, ssaStyleFormatNameStrikeOut,
 			ssaStyleFormatNameUnderline:
 			var b *bool
 			switch attr {
@@ -783,7 +698,7 @@ func (s ssaStyle) string(format []string) string {
 				b = s.bold
 			case ssaStyleFormatNameItalic:
 				b = s.italic
-			case ssaStyleFormatNameStrikeout:
+			case ssaStyleFormatNameStrikeOut:
 				b = s.strikeout
 			case ssaStyleFormatNameUnderline:
 				b = s.underline
@@ -812,7 +727,7 @@ func (s ssaStyle) string(format []string) string {
 				v = newSSAColorFromColor(c)
 			}
 		// Float
-		case ssaStyleFormatNameAlphaLevel, ssaStyleFormatNameAngle, ssaStyleFormatNameFontSize,
+		case ssaStyleFormatNameAlphaLevel, ssaStyleFormatNameAngle, ssaStyleFormatNameFontsize,
 			ssaStyleFormatNameScaleX, ssaStyleFormatNameScaleY,
 			ssaStyleFormatNameOutline, ssaStyleFormatNameShadow, ssaStyleFormatNameSpacing:
 			var f *float64
@@ -821,7 +736,7 @@ func (s ssaStyle) string(format []string) string {
 				f = s.alphaLevel
 			case ssaStyleFormatNameAngle:
 				f = s.angle
-			case ssaStyleFormatNameFontSize:
+			case ssaStyleFormatNameFontsize:
 				f = s.fontSize
 			case ssaStyleFormatNameScaleX:
 				f = s.scaleX
@@ -859,9 +774,9 @@ func (s ssaStyle) string(format []string) string {
 				v = strconv.Itoa(*i)
 			}
 		// String
-		case ssaStyleFormatNameFontName:
+		case ssaStyleFormatNameFontname:
 			switch attr {
-			case ssaStyleFormatNameFontName:
+			case ssaStyleFormatNameFontname:
 				v = s.fontName
 			}
 		default:
@@ -1086,7 +1001,6 @@ func (e *ssaEvent) item(styles map[string]*Style) (i *Item, err error) {
 	// Loop through lines
 	for _, s := range ssaRegexpLinesSeparator.Split(e.text, -1) {
 		// Init
-		s = strings.TrimSpace(s)
 		if s == "" {continue}
 		var l = Line{VoiceName: e.name}
 
@@ -1094,13 +1008,11 @@ func (e *ssaEvent) item(styles map[string]*Style) (i *Item, err error) {
 		var matches = ssaRegexpEffect.FindAllStringIndex(s, -1)
 		if len(matches) > 0 {
 			// Loop through matches
-			var lineItem *LineItem
+			var lineItem = &LineItem{}
 			var previousEffectEndOffset int
 			for _, idxs := range matches {
-				if lineItem != nil {
-					lineItem.Text = s[previousEffectEndOffset:idxs[0]]
-					l.Items = append(l.Items, *lineItem)
-				}
+				lineItem.Text = s[previousEffectEndOffset:idxs[0]]
+				l.Items = append(l.Items, *lineItem)
 				previousEffectEndOffset = idxs[1]
 				lineItem = &LineItem{InlineStyle: &StyleAttributes{SSAEffect: s[idxs[0]:idxs[1]]}}
 			}
@@ -1116,38 +1028,9 @@ func (e *ssaEvent) item(styles map[string]*Style) (i *Item, err error) {
 	return
 }
 
-// updateFormat updates the format based on the non empty fields
-func (e ssaEvent) updateFormat(formatMap map[string]bool, format []string) []string {
-	if len(e.effect) > 0 {
-		format = ssaUpdateFormat(ssaEventFormatNameEffect, formatMap, format)
-	}
-	if e.layer != nil {
-		format = ssaUpdateFormat(ssaEventFormatNameLayer, formatMap, format)
-	}
-	if e.marginLeft != nil {
-		format = ssaUpdateFormat(ssaEventFormatNameMarginL, formatMap, format)
-	}
-	if e.marginRight != nil {
-		format = ssaUpdateFormat(ssaEventFormatNameMarginR, formatMap, format)
-	}
-	if e.marginVertical != nil {
-		format = ssaUpdateFormat(ssaEventFormatNameMarginV, formatMap, format)
-	}
-	if e.marked != nil {
-		format = ssaUpdateFormat(ssaEventFormatNameMarked, formatMap, format)
-	}
-	if len(e.name) > 0 {
-		format = ssaUpdateFormat(ssaEventFormatNameName, formatMap, format)
-	}
-	if len(e.style) > 0 {
-		format = ssaUpdateFormat(ssaEventFormatNameStyle, formatMap, format)
-	}
-	return format
-}
-
 // formatDurationSSA formats an .ssa duration
 func formatDurationSSA(i time.Duration) string {
-	return formatDuration(i, ".", 2)
+	return strings.TrimPrefix(formatDuration(i, ".", 2), "0")
 }
 
 // string returns the block as a string
@@ -1188,9 +1071,8 @@ func (e *ssaEvent) string(format []string) string {
 			case ssaEventFormatNameMarginV:
 				i = e.marginVertical
 			}
-			if i != nil {
-				v = strconv.Itoa(*i)
-			}
+			if i == nil {i = new(int)}
+			v = strconv.Itoa(*i)
 		// String
 		case ssaEventFormatNameEffect, ssaEventFormatNameName, ssaEventFormatNameStyle, ssaEventFormatNameText:
 			switch attr {
@@ -1226,6 +1108,12 @@ func (s Subtitles) WriteToSSA(o io.Writer) (err error) {
 		return
 	}
 
+	if s.Metadata == nil {
+		s.Metadata = &Metadata {
+			SSAScriptType: "v4.00+",
+			SSAWrapStyle: "0",
+		}
+	}
 	// Write Script Info block
 	var si = newSSAScriptInfo(s.Metadata)
 	if _, err = o.Write(si.bytes()); err != nil {
@@ -1234,18 +1122,59 @@ func (s Subtitles) WriteToSSA(o io.Writer) (err error) {
 	}
 
 	// Write Styles block
-	if len(s.Styles) > 0 {
+	defaultStyle := (*Style)(nil)
+	if len(s.Styles) == 0 {
+		defaultStyle = &Style {
+			ID: "Default",
+			InlineStyle: &StyleAttributes {
+				SSAAlignment:  astiptr.Int(2),
+				SSAAngle:      astiptr.Float(0),
+				SSABackColour: &Color{},
+				SSABold:           astiptr.Bool(false),
+				SSABorderStyle:    astiptr.Int(1),
+				SSAEncoding:       astiptr.Int(1),
+				SSAFontName:       "MS Mincho", //"AR PL UMing CN",
+				SSAFontSize:       astiptr.Float(20),
+				SSAItalic:         astiptr.Bool(false),
+				SSAMarginLeft:     astiptr.Int(10),
+				SSAMarginRight:    astiptr.Int(10),
+				SSAMarginVertical: astiptr.Int(10),
+				SSAOutline:        astiptr.Float(4),
+				SSAOutlineColour: &Color{Alpha: 0x7F},
+				SSAPrimaryColour: &Color{
+					Blue:  0xFF,
+					Green: 0xFF,
+					Red:   0xFF,
+				},
+				SSAScaleX: astiptr.Float(100),
+				SSAScaleY: astiptr.Float(100),
+				SSASecondaryColour: &Color{Red: 0xFF},
+				SSAShadow:            astiptr.Float(0),
+				SSASpacing:           astiptr.Float(0),
+				SSAStrikeout:         astiptr.Bool(false),
+				SSAUnderline:         astiptr.Bool(false),
+			},
+		}
+		s.Styles[defaultStyle.ID] = defaultStyle
+	}
+	{
 		// Header
-		var b = []byte("\n[V4 Styles]\n")
+		var b = []byte("\n[V4+ Styles]\n")
 
 		// Format
-		var formatMap = make(map[string]bool)
-		var format = []string{ssaStyleFormatNameName}
+		var format = []string{
+			ssaStyleFormatNameName, ssaStyleFormatNameFontname, ssaStyleFormatNameFontsize,
+			ssaStyleFormatNamePrimaryColour, ssaStyleFormatNameSecondaryColour, ssaStyleFormatNameOutlineColour,
+			ssaStyleFormatNameBackColour, ssaStyleFormatNameBold, ssaStyleFormatNameItalic, ssaStyleFormatNameUnderline,
+			ssaStyleFormatNameStrikeOut, ssaStyleFormatNameScaleX, ssaStyleFormatNameScaleY, ssaStyleFormatNameSpacing,
+			ssaStyleFormatNameAngle, ssaStyleFormatNameBorderStyle, ssaStyleFormatNameOutline, ssaStyleFormatNameShadow,
+			ssaStyleFormatNameAlignment, ssaStyleFormatNameMarginL, ssaStyleFormatNameMarginR, ssaStyleFormatNameMarginV,
+			ssaStyleFormatNameEncoding,
+		}
 		var styles = make(map[string]*ssaStyle)
 		var styleNames []string
 		for _, s := range s.Styles {
 			var ss = newSSAStyleFromStyle(*s)
-			format = ss.updateFormat(formatMap, format)
 			styles[ss.name] = ss
 			styleNames = append(styleNames, ss.name)
 		}
@@ -1270,15 +1199,15 @@ func (s Subtitles) WriteToSSA(o io.Writer) (err error) {
 		var b = []byte("\n[Events]\n")
 
 		// Format
-		var formatMap = make(map[string]bool)
 		var format = []string{
-			ssaEventFormatNameStart,
-			ssaEventFormatNameEnd,
+			ssaEventFormatNameLayer, ssaEventFormatNameStart, ssaEventFormatNameEnd, ssaEventFormatNameStyle,
+			ssaEventFormatNameName, ssaEventFormatNameMarginL, ssaEventFormatNameMarginR, ssaEventFormatNameMarginV,
+			ssaEventFormatNameEffect,
 		}
 		var events []*ssaEvent
 		for _, i := range s.Items {
+			if i.Style == nil {i.Style = defaultStyle}
 			var e = newSSAEventFromItem(*i)
-			format = e.updateFormat(formatMap, format)
 			events = append(events, e)
 		}
 		format = append(format, ssaEventFormatNameText)
