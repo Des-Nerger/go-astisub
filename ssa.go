@@ -1133,7 +1133,7 @@ func (s Subtitles) WriteToSSA(o io.Writer) (err error) {
 				SSABold:           astiptr.Bool(false),
 				SSABorderStyle:    astiptr.Int(1),
 				SSAEncoding:       astiptr.Int(1),
-				SSAFontName:       "MS Mincho", //"AR PL UMing CN",
+				SSAFontName:       "Arial",
 				SSAFontSize:       astiptr.Float(20),
 				SSAItalic:         astiptr.Bool(false),
 				SSAMarginLeft:     astiptr.Int(10),
