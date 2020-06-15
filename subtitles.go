@@ -68,6 +68,7 @@ func Open(o Options) (s *Subtitles, err error) {
 
 	// Parse the content
 	switch filepath.Ext(o.Filename) {
+	default: fallthrough
 	case ".srt":
 		s, err = ReadFromSRT(f)
 	case ".ssa", ".ass":
@@ -82,8 +83,6 @@ func Open(o Options) (s *Subtitles, err error) {
 		s, err = ReadFromWebVTT(f)
 	case ".txt":
 		s, err = ReadFromAudacityTXT(f)
-	default:
-		err = ErrInvalidExtension
 	}
 	return
 }
@@ -614,6 +613,7 @@ func (s Subtitles) Write(dst string) (err error) {
 
 	// Write the content
 	switch filepath.Ext(dst) {
+	default: fallthrough
 	case ".srt":
 		err = s.WriteToSRT(f)
 	case ".ssa", ".ass":
@@ -626,8 +626,6 @@ func (s Subtitles) Write(dst string) (err error) {
 		err = s.WriteToWebVTT(f)
 	case ".txt":
 		err = s.WriteToAudacityTXT(f)
-	default:
-		err = ErrInvalidExtension
 	}
 	return
 }
