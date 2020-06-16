@@ -1121,42 +1121,46 @@ func (s Subtitles) WriteToSSA(o io.Writer) (err error) {
 		return
 	}
 
-	// Write Styles block
 	defaultStyle := (*Style)(nil)
-	if len(s.Styles) == 0 {
-		defaultStyle = &Style {
-			ID: "Default",
-			InlineStyle: &StyleAttributes {
-				SSAAlignment:  astiptr.Int(2),
-				SSAAngle:      astiptr.Float(0),
-				SSABackColour: &Color{},
-				SSABold:           astiptr.Bool(false),
-				SSABorderStyle:    astiptr.Int(1),
-				SSAEncoding:       astiptr.Int(1),
-				SSAFontName:       "Arial",
-				SSAFontSize:       astiptr.Float(20),
-				SSAItalic:         astiptr.Bool(false),
-				SSAMarginLeft:     astiptr.Int(10),
-				SSAMarginRight:    astiptr.Int(10),
-				SSAMarginVertical: astiptr.Int(10),
-				SSAOutline:        astiptr.Float(4),
-				SSAOutlineColour: &Color{Alpha: 0x7F},
-				SSAPrimaryColour: &Color{
-					Blue:  0xFF,
-					Green: 0xFF,
-					Red:   0xFF,
+	{
+		const ID = "Default"
+		defaultStyle = s.Styles[ID]
+		if defaultStyle==nil {
+			defaultStyle = &Style {
+				ID: ID,
+				InlineStyle: &StyleAttributes {
+					SSAAlignment:  astiptr.Int(2),
+					SSAAngle:      astiptr.Float(0),
+					SSABackColour: &Color{},
+					SSABold:           astiptr.Bool(false),
+					SSABorderStyle:    astiptr.Int(1),
+					SSAEncoding:       astiptr.Int(1),
+					SSAFontName:       "Arial",
+					SSAFontSize:       astiptr.Float(20),
+					SSAItalic:         astiptr.Bool(false),
+					SSAMarginLeft:     astiptr.Int(10),
+					SSAMarginRight:    astiptr.Int(10),
+					SSAMarginVertical: astiptr.Int(10),
+					SSAOutline:        astiptr.Float(2),
+					SSAOutlineColour: &Color{Alpha: 0x7F},
+					SSAPrimaryColour: &Color{
+						Blue:  0xFF,
+						Green: 0xFF,
+						Red:   0xFF,
+					},
+					SSAScaleX: astiptr.Float(100),
+					SSAScaleY: astiptr.Float(100),
+					SSASecondaryColour: &Color{Red: 0xFF},
+					SSAShadow:            astiptr.Float(0),
+					SSASpacing:           astiptr.Float(0),
+					SSAStrikeout:         astiptr.Bool(false),
+					SSAUnderline:         astiptr.Bool(false),
 				},
-				SSAScaleX: astiptr.Float(100),
-				SSAScaleY: astiptr.Float(100),
-				SSASecondaryColour: &Color{Red: 0xFF},
-				SSAShadow:            astiptr.Float(0),
-				SSASpacing:           astiptr.Float(0),
-				SSAStrikeout:         astiptr.Bool(false),
-				SSAUnderline:         astiptr.Bool(false),
-			},
+			}
+			s.Styles[ID] = defaultStyle
 		}
-		s.Styles[defaultStyle.ID] = defaultStyle
 	}
+	// Write Styles block
 	{
 		// Header
 		var b = []byte("\n[V4+ Styles]\n")
