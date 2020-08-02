@@ -703,6 +703,15 @@ func parseDuration(i, millisecondSep string, numberOfMillisecondDigits int) (o t
 
 // formatDuration formats a duration
 func formatDuration(i time.Duration, millisecondSep string, numberOfMillisecondDigits int) (s string) {
+	i += 5 * func() time.Duration {
+		switch numberOfMillisecondDigits {
+		default: fallthrough
+		case 3: return 1
+		case 2: return 10
+		case 1: return 100
+		case 0: return 1000
+		}
+	} () * 100*time.Microsecond
 	// Parse hours
 	var hours = int(i / time.Hour)
 	var n = i % time.Hour
@@ -727,9 +736,8 @@ func formatDuration(i time.Duration, millisecondSep string, numberOfMillisecondD
 	}
 	s += strconv.Itoa(seconds) + millisecondSep
 
-	// Parse milliseconds
-	var milliseconds = float64(n/time.Millisecond) / float64(1000)
-	s += fmt.Sprintf("%."+strconv.Itoa(numberOfMillisecondDigits)+"f", milliseconds)[2:]
+	s += fmt.Sprintf( "%0"+strconv.Itoa(numberOfMillisecondDigits)+"d",
+		int(float64(n/time.Millisecond) / math.Pow10(3-numberOfMillisecondDigits)) )
 	return
 }
 
