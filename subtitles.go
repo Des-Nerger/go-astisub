@@ -83,6 +83,8 @@ func Open(o Options) (s *Subtitles, err error) {
 		s, err = ReadFromWebVTT(f)
 	case ".txt":
 		s, err = ReadFromAudacityTXT(f)
+	case ".srv3":
+		s, err = ReadFromSRV3(f)
 	}
 	return
 }
@@ -626,6 +628,8 @@ func (s Subtitles) Write(dst string) (err error) {
 		err = s.WriteToWebVTT(f)
 	case ".txt":
 		err = s.WriteToAudacityTXT(f)
+	case ".srv3":
+		err = s.WriteToSRV3(f)
 	}
 	return
 }
